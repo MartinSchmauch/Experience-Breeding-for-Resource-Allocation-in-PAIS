@@ -1,0 +1,27 @@
+activity_requirements:
+  W_Complete application: 32.0
+  W_Validate application: 36.0
+  W_Call incomplete files: 40.0
+  W_Handle leads: 22.0
+  W_Personal Loan collection: 21.0
+  W_Assess potential fraud: 35.0
+  W_Shortened completion: 21.0
+  W_Call after offers: 30.0
+default_requirement:
+  level: 30.0
+activity_benchmarks:
+  W_Assess potential fraud: 30
+  W_Call after offers: 30
+  W_Call incomplete files: 30
+  W_Complete application: 45
+  W_Handle leads: 30
+  W_Validate application: 30
+default_beginner_durations:
+  W_Assess potential fraud: 18000
+  W_Call after offers: 1371
+  W_Call incomplete files: 1220
+  W_Complete application: 1614
+  W_Handle leads: 677
+  W_Personal Loan collection: 137
+  W_Shortened completion: 3690
+  W_Validate application: 2888

@@ -1,0 +1,168 @@
+simulation:
+  max_simulation_days: 60
+  random_seed: 42
+  max_tasks_per_case: 12 # limit to prevent infinite loops in cases with many tasks
+  logging:
+    enabled: false
+    level: INFO
+    file: null
+    console: true
+case_arrival:
+  mode: probabilistic
+  timeline_path: data/timeline.csv
+  use_test_split: true
+  split_info_path: data/timeline_split_info.json
+  probabilistic:
+    use_arrival_times_from_timeline: true
+    use_probabilistic_branching: true
+    case_fraction: 1.0 # fraction of cases to simulate (for faster testing or to give a fair chance)
+    sampling_mode: random
+process_model:
+  type: probabilistic
+  load_from_log: true
+  log_path: data/historical_logs/BPIC17/BPI_Challenge_2017.xes
+  model_path: data/process_model.pkl
+  context_attributes:
+  - case:LoanGoal
+  - case:ApplicationType
+  probabilistic:
+    transition_models_path: data/transition_models.pkl
+    history_mode: count
+    random_seed: 42
+    variant_filter:
+      min_frequency: 1
+      loop_handling: trim
+      max_activity_occurrences: 3
+experience:
+  context_attributes:
+  - case:LoanGoal
+  - case:ApplicationType
+  training_split: 0.2
+  experience_store_path: data/experience_store.json
+  # capability_mapping: # can be set to override the initial capability levels that was created using the learning curve
+  # - count: 0
+  #   level: 1.0
+  # - count: 1
+  #   level: 10.0
+  # - count: 20
+  #   level: 22.0
+  # - count: 30
+  #   level: 35.0
+  # - count: 40
+  #   level: 40.0
+  # - count: 50
+  #   level: 45.0
+  # - count: 100
+  #   level: 82.0
+  # - count: 150
+  #   level: 92.0
+  # - count: 200
+  #   level: 95.0
+  min_avg_daily_hours: 0.6 # the lower the average hours, the more resources are available
+  duration_assignment_strategy: segment_level # longest_resource, completing_resource, segment_level
+  default_duration: 3600 # in seconds
+  default_std: 1080 # in seconds, 30% of default duration
+  learning_model: richards
+  breeding_params:
+    lower_asymptote: 0.0
+    upper_asymptote: 100.0
+    growth_rate: 0.08 # lower value -> flatter/slower learning progression
+    shape_param_Q: 0.5 # higher value -> shifts major learning gains to later repetitions
+    shape_param_M: 0.1 # slightly smoother transition around the inflection region -> the smaller, the more s-shaped
+  track_experience_levels: true
+  save_experience_snapshots: true
+scheduler:
+  type: experience_based # experience_based, greedy, random
+scheduling:
+  mode: batch
+  scheduling_time: 6.0
+  planning_horizon_hours: 24.0
+bootstrap_capability:
+  enabled: true
+  selection_heuristic: lowest_workload # lowest_workload, highest_pressure, random
+  default_onboarding_seconds: 3600 # 1 hour
+  activity_onboarding_seconds:
+    W_Shortened completion: 3600
+    W_Personal Loan collection: 3600
+  max_bootstrap_resources_per_activity_per_run: 1
+optimization:
+  solver: ortools
+  max_solver_time_seconds: 60.0
+  optimality_gap: 0.05
+  objective_weights:
+    pressure: 1.0
+    deferral_priority: 1.0
+    bottleneck: 12.0 # focus on bottleneck mitigation
+    utilization: 5.0
+    underutilization: 2.0 # upskill underutilized resources on high-demand activities using low-pressure and substitutable mentors
+    shortage: 6.0 # higher focus on addressing same-day resourceshortages
+  max_task_deferrals: 10
+  constraints:
+    enforce_working_hours: true
+    allow_overtime: true
+    max_overtime_hours: 2.0
+bottleneck_detection:
+  enabled: true
+mentoring:
+  enabled: true
+  duration_multiplier: 1.1
+  duration_summand_seconds: 600 # 10 minutes
+  mentor_workload_credit: 0.7 # TODO: currently disabled
+  severe_bottleneck_mode: objective_bonus # constraint or objective_bonus
+  bottleneck_activity_strategy:
+    enabled: true # reactive (future-looking bottleneck activity mentoring)
+    resource_availability_ratio: 0.15 # if >= 20% of capable resources are unavailable, consider it a bottleneck worth mentoring
+  underutilization_strategy:
+    enabled: false # proactive
+    debug: false
+    mentor_pressure_threshold: 0.95
+    target_pressure_threshold: 0.55
+    min_spare_hours: 1.0
+    max_current_activities: 5
+    bonus_scale: 1.75
+  same_day_shortage_strategy:
+    enabled: false # reactive
+    debug: false
+    strong_shortage_ratio: 1.2           # strong if demand is >= 1.3x supply for an activity
+    strategic_quota_per_activity: 1      # small hard quota when severe_bottleneck_mode=constraint
+    objective_bonus_multiplier: 0.75     # smaller than severe BOTTLENECK_BONUS for soft mode
+
+working_hours:
+  enabled: true
+  default_schedule:
+    monday:
+    - 9.0
+    - 17.0
+    tuesday:
+    - 9.0
+    - 17.0
+    wednesday:
+    - 9.0
+    - 17.0
+    thursday:
+    - 9.0
+    - 17.0
+    friday:
+    - 9.0
+    - 17.0
+  start_date:
+    year: 2016
+    month: 1
+    day: 1
+  calendar_path: data/calendars.json
+  generate_absences:
+    vacation_days_per_year: 25
+    sick_days_per_year: 15
+    vacation_min_consecutive: 3
+    vacation_max_consecutive: 10
+output:
+  directory: data/simulation_outputs
+  log_file: simulation_log.csv
+  daily_summary_logging: true
+duration_prediction:
+  enabled: false
+  model_dir: models
+  safety_margin_std_multiplier: 0.0
+  test_size: 0.2
+  random_state: 42
+  duration_estimation_method: mean_plus_safety_margin # if predictor enabled; options: mean, max, mean_plus_safety_margin
