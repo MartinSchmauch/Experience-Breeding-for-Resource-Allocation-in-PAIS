@@ -1,0 +1,37 @@
+/.mt/
+.mt/
+.vscode/
+.VSCodeCounter/
+.src/tex/
+__pycache__/
+.ipynb_checkpoints/
+.env
+.env.*
+*.pyc
+*.pyo
+*.pyd
+
+# macOS
+.DS_Store
+
+# model artifacts
+*.pkl
+
+# process logs:
+*.xes
+*.xes.gz
+*.xml
+*.csv
+*.json
+*.jsonl
+
+# graphics
+*.svg
+*.png
+.puml
+
+# other code artifacts
+padella/
+Old/infeasable_fix/
+
+*.tex
